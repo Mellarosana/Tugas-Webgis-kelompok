@@ -1,0 +1,110 @@
+<html>
+	<head>
+	
+	<!-- Menghubungkan ke Leaflet  -->
+	<link rel="stylesheet" href="leaflet/leaflet.css"/>
+	<script src="leaflet/leaflet.js"></script>
+	
+	<!-- Menghubungkan ke groupedlayercontrol supaya bisa munculkan basemap -->
+	<link rel="stylesheet" href="leaflet/leaflet.groupedlayercontrol.css"/> 
+	<script src="leaflet/leaflet.groupedlayercontrol.js"></script>
+
+	<script type="text/javascript" src="leaflet/leaflet.ajax.min.js"></script>
+
+	</head>
+		<body>
+		<!-- peta akan ditampilkan disini -->
+		<div style="height:500px" id="mapid"></div>
+		 </body>
+
+	<style>
+		.legend {
+			line-height: 18px;
+			color: #555;
+		}
+		.legend i {
+			width: 18px;
+			height: 18px;
+			float: left;
+			margin-right: 8px;
+			opacity: 0.7;
+	}
+	</style>
+		  
+	<script>
+	 var mymap = L.map('mapid').setView([-7.5592837,110.7303393], 14);	
+	 
+	 var GoogleMaps = new 
+	L.TileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { 
+	opacity: 1.0, attribution: 'Ketrampilan Berkehidupan dan WEBSIG UMS'
+	}).addTo(mymap);
+	var GoogleSatelliteHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
+	maxZoom: 22, 
+	attribution: 'Ketrampilan Berkehidupan dan WEBSIG UMS' 
+	});
+	var baseLayers = {
+	'Google Satellite Hybrid': GoogleSatelliteHybrid,
+	'Google Maps': GoogleMaps,
+	};
+	L.control.groupedLayers(baseLayers).addTo(mymap);
+
+	function popUp(f,l){
+    var out = [];
+    if (f.properties){
+        for(key in f.properties){
+            out.push(key+": "+f.properties[key]);
+        }
+        l.bindPopup(out.join("<br />"));
+    }
+	}
+	var jsonTest = new L.GeoJSON.AJAX("http://localhost/tugaskelompok/gjson.php",{onEachFeature:popUp,style: style}).addTo(mymap);
+
+	var jsonTest1 = new L.GeoJSON.AJAX("http://localhost/tugaskelompok/gjson_faskes.php",{onEachFeature:popUp}).addTo(mymap);
+
+	function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Jumlah_Faskes),
+        weight: 2,
+        opacity: 1,
+        color: 'white',
+        dashArray: '3',
+        fillOpacity: 0.7
+    };
+}
+
+	function getColor(d) {
+    return d > 5  ? '#800026' :
+           d > 4  ? '#BD0026' :
+           d > 3  ? '#E31A1C' :
+           d > 2  ? '#FC4E2A' :
+           d > 1  ? '#FD8D3C' :
+           d > 0  ? '#FEB24C' :
+                	'#FFEDA0';
+}
+
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+
+    var div = L.DomUtil.create('div', 'info legend'),
+        grades = [0, 1, 2, 3, 4, 5],
+        labels = [];
+
+    // loop through our density intervals and generate a label with a colored square for each interval
+    for (var i = 0; i < grades.length; i++) {
+        div.innerHTML +=
+            '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+            grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+    }
+
+    return div;
+};
+
+legend.addTo(mymap);
+
+
+	L.control.scale().addTo(mymap);
+
+	</script>
+</html>
+  
